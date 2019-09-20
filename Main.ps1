@@ -1,5 +1,5 @@
 ﻿Add-Type -AssemblyName PresentationFramework
-Import-Module C:\temp\ProdSDToolV2\GUI.ps1
+Import-Module GUI.ps1
 #############################################################################################
 
 
