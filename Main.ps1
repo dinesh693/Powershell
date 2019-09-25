@@ -1,6 +1,6 @@
 Add-Type -AssemblyName PresentationFramework
 
-Import-Module GUI.ps1
+Import-Module .\GUI.ps1
 #############################################################################################
 
 
