@@ -175,12 +175,6 @@ $open_file = $window.FindName("button_openfile")
 $cinumber_get_apps = $window.FindName("textBox_CI_installed_apps")
 $listview_apps = $window.FindName("listView")
 
-
 ################################ Variable declaration for form items in Tab 2 starts
-
-
-
-#Get-Process -ComputerName ci0030000 | Sort-Object Name | Format-Table Name, Description
-
 ##################Show GUI####################
 $window.ShowDialog()
