@@ -1,11 +1,8 @@
-﻿[xml]$xaml = @"
+[xml]$xaml = @"
 
 <Window
-
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-
   Title="MainWindow" Height="623.557" Width="793.309">
     <TabControl x:Name="tabControl" HorizontalAlignment="Left" Height="589" Margin="6,3,0,0" VerticalAlignment="Top" Width="777">
         <TabItem Header="Remote PC">
@@ -21,7 +18,6 @@
                     <ListView.View>
                         <GridView>
                             <GridViewColumn x:Name="header1" Header="" DisplayMemberBinding="{Binding Name}" />
-                            <GridViewColumn x:Name="header2" Header="" DisplayMemberBinding="{Binding ID}" />
                             <GridViewColumn x:Name="header3" Header="" DisplayMemberBinding="{Binding PM}" />
                         </GridView>
                     </ListView.View>
@@ -43,27 +39,28 @@
                     <ColumnDefinition Width="19*"/>
                     <ColumnDefinition Width="54*"/>
                 </Grid.ColumnDefinitions>
-                <Canvas Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="176" Margin="10,10,0,0" VerticalAlignment="Top" Width="437" Background="#FFB9B9B9">
+                <Canvas Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="176" Margin="10,10,0,0" VerticalAlignment="Top" Width="415" Background="#FFB9B9B9">
                     <Label x:Name="label1" Content="Username" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="68" Canvas.Left="10" Canvas.Top="22"/>
                     <TextBox x:Name="textBox_username" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="106" Canvas.Left="83" Canvas.Top="27"/>
                     <Button x:Name="button_lastlogon" Content="Last Logon" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="81" Canvas.Left="194" Canvas.Top="25"/>
-                    <TextBlock x:Name="textbox_lastlogon" HorizontalAlignment="Left" Height="117" TextWrapping="Wrap" VerticalAlignment="Top" Width="179" Canvas.Left="10" Canvas.Top="55"/>
-                    <Button x:Name="button_lastlogon_Copy" Content="Member Of" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="81" Canvas.Left="194" Canvas.Top="55"/>
-                    <Button x:Name="button_lastlogon_Copy1" Content="Check Folder Access" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="119" Canvas.Left="283" Canvas.Top="24"/>
+                    <TextBlock x:Name="textbox_lastlogon" HorizontalAlignment="Left" Height="117" TextWrapping="Wrap" VerticalAlignment="Top" Width="265" Canvas.Left="10" Canvas.Top="55"/>
+                    <Button x:Name="button_memberof" Content="Member Of" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="81" Canvas.Left="283" Canvas.Top="57"/>
+                    <Button x:Name="button_check_folderaccess" Content="Check Folder Access" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="119" Canvas.Left="283" Canvas.Top="24"/>
                 </Canvas>
-                <ListView x:Name="listView1" Grid.Column="2" HorizontalAlignment="Left" Height="336" Margin="216,11,0,0" VerticalAlignment="Top" Width="264">
+                <ListView x:Name="listView_membership" Grid.Column="2" HorizontalAlignment="Left" Height="337" Margin="192,10,0,0" VerticalAlignment="Top" Width="329">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn/>
+                            <GridViewColumn x:Name="memberof_header1" Header="Member Of" DisplayMemberBinding="{Binding ACLName}" />
+                            <GridViewColumn x:Name="memberof_header2" Header="Type" DisplayMemberBinding="{Binding GroupCategory}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <Canvas Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="156" Margin="10,191,0,0" VerticalAlignment="Top" Width="437" Background="#FFBDBDBD">
+                <Canvas Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="156" Margin="10,191,0,0" VerticalAlignment="Top" Width="415" Background="#FFBDBDBD">
                     <Label x:Name="label3" Content="Folder Path" Height="25" Canvas.Left="10" Canvas.Top="22" Width="94"/>
-                    <Button x:Name="button" Content="..." Height="29" Canvas.Left="397" Canvas.Top="22" Width="40"/>
+                    <Button x:Name="button" Content="..." Height="29" Canvas.Left="375" Canvas.Top="22" Width="40"/>
                     <Button x:Name="button_lastlogon_Copy2" Content="Check Folder ACL" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="119" Canvas.Left="87" Canvas.Top="66"/>
                 </Canvas>
-                <TextBox x:Name="textBox" Grid.ColumnSpan="2" Grid.Column="1" HorizontalAlignment="Left" Height="30" Margin="48,212,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="312"/>
+                <TextBox x:Name="textBox" Grid.ColumnSpan="2" Grid.Column="1" HorizontalAlignment="Left" Height="30" Margin="44,212,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="293"/>
                 <Button x:Name="button1" Content="Button" Grid.Column="2" HorizontalAlignment="Left" Margin="852,74,-396,0" VerticalAlignment="Top" Width="75"/>
             </Grid>
         </TabItem>
@@ -81,10 +78,9 @@
                 <Button x:Name="button_install_Copy" Content="Copy" Grid.Column="1" HorizontalAlignment="Left" Height="28" Margin="326,65,0,0" VerticalAlignment="Top" Width="79"/>
             </Grid>
         </TabItem>
-     
+
     </TabControl>
 </Window>
-
 
 "@
 
