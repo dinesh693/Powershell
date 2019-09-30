@@ -1,11 +1,12 @@
 Add-Type -AssemblyName PresentationFramework
-
 Import-Module .\GUI.ps1
 #############################################################################################
-
-
+$esc = [char]27
+$nl = [Environment]::NewLine
 $reader = (New-Object System.Xml.XmlNodeReader $xaml)
 $window = [Windows.Markup.XamlReader]::Load($reader)
+
+
 
 ########################################################### Tab 1 Ping Program Start
 ################################ Variable declaration for form items on Tab1 start
@@ -22,7 +23,7 @@ $header2 = $window.FindName("header2")
 $header3 = $window.FindName("header3")
 $cinumber.Text = "CI00"
 $get_installed_apps = $window.FindName("button_get_installed_apps")
-$app_uninstall = $window.FindName("button_uninstall")
+$button_pc_details = $window.FindName("button_pc_details")
 
 ################################ Variable declaration for form items on Tab1 Ends
 
@@ -57,37 +58,35 @@ $get_process.Add_Click({
     }
     else{
     $header1.Header = "Process Name"
-    $header3.Header = "Memory"
-    $process = Get-Process <# -ComputerName $cinumber.Text -ErrorVariable get_process_error #>| Sort-Object Name
-    $Bindable_Process = $process | Select-Object -Property @{Name='Name';Expression={$_.ProcessName}}, @{Name='PM';Expression={$_.PM}}
-    $listview_process.ItemsSource = $Process
+    $header3.Header = "ID"
+    
+    $process = Get-WmiObject -Class Win32_Process -ComputerName $cinumber.Text -ErrorVariable get_process_error | Sort-Object Name 
+    $Bindable_Process = $process | Select-Object -Property @{Name='Name';Expression={$_.ProcessName}}, @{Name='ID';Expression={$_.ProcessID}}
+    $listview_process.ItemsSource = $Bindable_Process
     if($get_process_error){ $ping_result_show.Text = $get_process_error} #"Unable to retrieve process from " +  $cinumber.Text + ". Check PC is online or is not local PC"}
     }
     
 })
 ################################ Get Process Event ends
 ################################ End Process Event starts
-$end_task.Add_Click({
-    #$process_name = $listview_process.SelectedItem.Name
-    $process_name = Get-WmiObject -Class Win32_Process -ComputerName $ComputerName -Filter "name='$listview_process.SelectedItem.Name'"
-    foreach($kill_process in $process_name){
-        $result = $kill_process.terminate()
-        $processid = $kill_process.handle
-        
-        if($result.returnvalue -eq 0){
-            $ping_result_show.Text = "The process $kill_process terminated succesfully."
-        }
-        else{
-            $ping_result_show.Text = "The process $kill_process termination has some problems."
-        }  
-    }
-    #$kill_task = taskkill /F /IM $process_name /T
+$end_task.Add_Click(
+{
+    $process_selected = $listview_process.SelectedItem.Name
+    write-host $process_selected
 
-    $ping_result_show.Text = $kill_task
+    Try {
+        $returnval = (Get-WmiObject -Class Win32_Process -ComputerName $cinumber.Text | ?{ $_.name -eq $process_selected } | %{ $_.Terminate() })
+    } Catch 
+    {
+        Write-Warning "Failed to end the process. Review the error message"
+        Write-Warning $_.Exception.Message
+        exit
+    }
+
     Start-Sleep 3.5
-    $process = Get-Process | Sort-Object Name
-    $Bindable_Process = $process | Select-Object -Property @{Name='Name';Expression={$_.ProcessName}}, @{Name='PM';Expression={$_.PM}}
-    $listview_process.ItemsSource = $Process
+    $process = Get-WmiObject -Class Win32_Process -ComputerName $cinumber.Text -ErrorVariable get_process_error | Sort-Object Name 
+    $Bindable_Process = $process | Select-Object -Property @{Name='Name';Expression={$_.ProcessName}}, @{Name='ID';Expression={$_.ProcessID}}
+    $listview_process.ItemsSource = $Bindable_Process
 
 })
 ################################ End Process Event starts
@@ -97,16 +96,22 @@ $get_installed_apps.Add_Click({
     $header1.Header = "Application Name"
     $header3.Header = "Vendor"
     $installed_apps = Get-Wmiobject -Class Win32_Product -ComputerName $cinumber.Text | select Name, Vendor | sort Name
-    $Bindable = $installed_apps | Select-Object -Property @{Name='Name';Expression={$_.Name}}, @{Name='PM';Expression={$_.Vendor}}
+    $Bindable = $installed_apps | Select-Object -Property @{Name='Name';Expression={$_.Name}}, @{Name='ID';Expression={$_.Vendor}}
     $listview_process.ItemsSource = $Bindable
 })
 
-$app_uninstall.Add_Click({
+$button_pc_details.Add_Click({
 
-    Write-Host $listview_apps.SelectedItem.ProgramName
-
+   $ping_result_show.Text
+   $caption = Get-WmiObject -class Win32_OperatingSystem -ComputerName $cinumber.Text| Select-Object  Caption | ForEach{ $_.Caption }
+   $servicepack = Get-WmiObject -class Win32_OperatingSystem -ComputerName $cinumber.Text| Select-Object  ServicePackMajorVersion | ForEach{ $_.ServicePackMajorVersion }
+   $osarch = Get-WmiObject -class Win32_OperatingSystem -ComputerName $cinumber.Text| Select-Object  OSArchitecture | ForEach{ $_.OSArchitecture }
+   $build_number = Get-WmiObject -class Win32_OperatingSystem -ComputerName $cinumber.Text| Select-Object  BuildNumber | ForEach{ $_.BuildNumber }
+   $host_name = Get-WmiObject -class Win32_OperatingSystem -ComputerName $cinumber.Text| Select-Object  CSName | ForEach{ $_.CSName }
+   $disk = Get-WmiObject -Class Win32_logicaldisk -ComputerName $cinumber.Text -Filter "DriveType = '3'" | Select-Object -Property DeviceID, DriveType, VolumeName, @{L='FreeSpaceGB';E={"{0:N2}" -f ($_.FreeSpace /1GB)}},@{L="Capacity";E={"{0:N2}" -f ($_.Size/1GB)}} | fl | Out-String
+   $ping_result_show.Text = "OS Version: $caption " + $nl + "Service Pack Version: $servicepack " + $nl + "OS Architecture: $osarch " + $nl + "Build Number: $build_number"  + $nl + "Host Name: $host_name " + $nl + $nl + "$esc Disk Info: $disk"
 })
-
+ 
 ##################s####################################### Get Installed App Ends
 ########################################################### Tab 1 Ping Program Ends
 
@@ -127,7 +132,7 @@ $memberof_header2 = $window.FindName("memberof_header2")
 ##################s####################################### Get User Last logon start
 $lastlogon.Add_Click({
 
-    $result = Get-ADUser -Identity $username_lastlogon.text -Properties LastLogon -server dcpdc03|Select-Object @{Name='LastLogon';Expression={[DateTime]::FromFileTime($_.LastLogon)}} | fl | out-string;
+    $result = Get-ADUser -Identity $username_lastlogon.text -Properties LastLogon -server dcpdc03|   Format-Table UserPrincipalName, @{Name='LastLogon';Expression={[DateTime]::FromFileTime($_.LastLogon)}} | fl | out-string;
     $textbox_result.text = $result
 
 })
@@ -135,46 +140,14 @@ $lastlogon.Add_Click({
 ##################s####################################### Get User Membership start
 
 $button_memberof.Add_Click({
-    $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text |Sort-Object -Property  @{Expression={$_.GroupCategory}}, @{Expression={$_.Name}}  | Select-Object  Name, GroupCategory 
-    #$memberof_header1.Header = "ACL Name"
-    #$memberof_header2.Header = "E G"
-    $Bindable_memberof = $member_of | Select-Object -Property @{Name='ACLName';Expression={$_.Name}} , @{Name='GroupCategory';Expression={$_.GroupCategory} }
+    $member_of = Get-ADPrincipalGroupMembership -Identity $username_lastlogon.text | Select-Object -ExpandProperty Name
+    $memberof_header1.Header = "ACL Name"
+    $Bindable_memberof = $member_of | Select-Object -Property @{Name='ACLName';Expression={$_.Name}} <#, @{Name='Description';Expression={$_.Vendor} }   #>
     $listview_memberof.ItemsSource = $Bindable_memberof
 })
 
 ##################s####################################### Get User Membership Ends
 ########################################################## Tab 2 Active Directory Ends
 ########################################################## Tab 3 Install MIS Starts
-################################ Variable declaration for form items in Tab 3 starts
 
-$open_file = $window.FindName("button_openfile")
-$file_name = $window.FindName("textBox_openfile")
-$CI_toCopy = $window.FindName("textBox_copyto")
-$install_file = $window.FindName("button_install")
-
-################################ Variable declaration for form items in Tab 3 ends
-
-
-$open_file.Add_Click({
-    $FileBrowser = New-Object System.Windows.Forms.OpenFileDialog -Property @{Multiselect = $true}
-    [void]$FileBrowser.ShowDialog()
-    $file_name.Text = $FileBrowser.FileNames 
-
-})
-
-$install_file.Add_Click({
-
-    $destination = "\\" + $CI_toCopy.Text + "\C$\temp"
-    cmd /c copy /z $file_name.Text $destination
-
-})
-########################################################## Tab 3 Install MIS Ends
-################################ Variable declaration for form items in Tab 2 starts
-
-$open_file = $window.FindName("button_openfile")
-$cinumber_get_apps = $window.FindName("textBox_CI_installed_apps")
-$listview_apps = $window.FindName("listView")
-
-################################ Variable declaration for form items in Tab 2 starts
-##################Show GUI####################
 $window.ShowDialog()
